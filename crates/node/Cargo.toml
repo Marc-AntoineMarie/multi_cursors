@@ -1,0 +1,17 @@
+[package]
+name = "mc-node"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+description = "Moteur MultiCursos : configuration, serveur, client"
+
+[dependencies]
+mc-proto = { path = "../proto" }
+mc-layout = { path = "../layout" }
+mc-input = { path = "../input" }
+anyhow = { workspace = true }
+serde = { workspace = true }
+toml = { workspace = true }
+tokio = { workspace = true }
+tracing = { workspace = true }
