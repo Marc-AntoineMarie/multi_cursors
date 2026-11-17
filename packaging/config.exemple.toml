@@ -1,0 +1,51 @@
+# Modèle de configuration MultiCursos.
+#
+# À copier dans :
+#   Linux   : ~/.config/multicursos/config.toml
+#   Windows : %APPDATA%\multicursos\config.toml
+#
+# `mcd init` génère ce fichier automatiquement, avec un jeton aléatoire et la taille d'écran
+# détectée ; ce modèle sert surtout à comprendre la structure et à la recopier d'une machine à
+# l'autre.
+
+# Nom de CETTE machine. Il doit correspondre à l'un des [[screen]] ci-dessous.
+name = "portable"
+
+# Secret partagé : identique sur toutes les machines, sinon la connexion est refusée.
+# NE PAS publier ce fichier une fois rempli.
+token = "à-remplacer-par-le-jeton-de-mcd-init"
+
+# Adresse d'écoute quand cette machine tient le rôle serveur.
+listen = "0.0.0.0:24810"
+
+[tuning]
+# Multiplicateur global des déplacements.
+sensitivity = 1.0
+# Pixels parcourus par millimètre de doigt sur un pavé tactile.
+touchpad_pixels_per_mm = 12.0
+# Millimètres de doigt par cran de molette, défilement à deux doigts.
+touchpad_mm_per_scroll = 4.0
+tap_to_click = true
+
+# Disposition des écrans, dans un plan global en pixels. Les blocs doivent être IDENTIQUES sur
+# toutes les machines : c'est la carte commune. Les bords qui se touchent sont les points de
+# bascule du curseur.
+#
+# Ici, « bureau » est placé à droite de « portable » : son bord gauche (x = 1920) commence là où
+# celui du portable finit.
+#
+# Une machine à plusieurs moniteurs déclare le rectangle qui les englobe.
+
+[[screen]]
+name = "portable"
+x = 0
+y = 0
+width = 1920
+height = 1080
+
+[[screen]]
+name = "bureau"
+x = 1920
+y = 0
+width = 2560
+height = 1440

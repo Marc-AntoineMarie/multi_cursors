@@ -1,0 +1,15 @@
+# MultiCursos — accès au périphérique d'injection sans privilèges root.
+#
+# /dev/uinput appartient à root seul par défaut. Cette règle le confie au groupe « input », le même
+# qui possède déjà /dev/input/event*. Le démon peut alors tourner sous l'utilisateur courant.
+#
+# `static_node` applique aussi les droits quand le module uinput est chargé sans qu'un périphérique
+# soit créé, cas où udev ne verrait sinon passer aucun événement.
+#
+# Installation :
+#   sudo install -m 644 60-multicursos.rules /etc/udev/rules.d/
+#   sudo udevadm control --reload-rules && sudo udevadm trigger
+#
+# À savoir : appartenir au groupe « input » permet de lire tous les périphériques d'entrée de la
+# machine, donc toutes les frappes clavier. C'est le compromis assumé pour éviter un service root.
+KERNEL=="uinput", SUBSYSTEM=="misc", GROUP="input", MODE="0660", OPTIONS+="static_node=uinput"

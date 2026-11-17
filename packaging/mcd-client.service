@@ -1,0 +1,23 @@
+# Service utilisateur pour le rôle serveur.
+#
+#   mkdir -p ~/.config/systemd/user
+#   cp mcd-client.service ~/.config/systemd/user/
+#   systemctl --user daemon-reload
+#   systemctl --user enable --now mcd-client
+#
+# Service *utilisateur* et non système : il hérite ainsi des groupes de la session (dont « input »)
+# sans aucun privilège supplémentaire.
+[Unit]
+Description=MultiCursos (client) — partage de la souris entre ordinateurs
+After=graphical-session.target
+
+[Service]
+Type=simple
+ExecStart=%h/.local/bin/mcd client --connect SERVEUR
+Restart=on-failure
+RestartSec=2
+# La prise exclusive des périphériques est relâchée par le noyau à la fermeture des descripteurs,
+# donc un redémarrage du service rend toujours la souris au système entre-temps.
+
+[Install]
+WantedBy=default.target

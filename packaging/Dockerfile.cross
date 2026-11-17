@@ -1,0 +1,17 @@
+# Image de compilation croisée vers Windows, sans rien installer sur la machine hôte.
+#
+#   docker build -f packaging/Dockerfile.cross -t multicursos-cross .
+#   docker run --rm --user "$(id -u):$(id -g)" \
+#       -e CARGO_HOME=/cargo -e CARGO_TARGET_DIR=/cargo/target \
+#       -v "$PWD/.cargo-cross":/cargo -v "$PWD":/w -w /w \
+#       multicursos-cross cargo build --release --target x86_64-pc-windows-gnu
+#
+# Le binaire obtenu, target/x86_64-pc-windows-gnu/release/mcd.exe, se copie tel quel sur la
+# machine Windows : aucune dépendance à installer.
+FROM rust:1-slim
+
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends mingw-w64 \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN rustup target add x86_64-pc-windows-gnu
