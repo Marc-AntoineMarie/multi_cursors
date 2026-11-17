@@ -199,9 +199,12 @@ injecte. Le journal du serveur affiche `bascule de l'écran 0 vers « windows »
 
 ### Diagnostics
 
+Le détail de la vérification, niveau par niveau, est dans [TESTS.md](TESTS.md).
+
 ```bash
 mcd selftest  # déplace le curseur en carré : valide l'injection, sans aucun droit particulier
 mcd devices   # ce qui sera capturé, et comment chaque périphérique est classé
+mcd monitor   # affiche les déplacements captés, sans rien injecter
 mcd check     # droits d'accès, avec la marche à suivre en cas de manque
 mcd server -v # journal détaillé : bascules, latence aller-retour
 ```

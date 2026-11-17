@@ -37,6 +37,17 @@ enum Command {
     /// Liste les périphériques d'entrée détectés et leur classement.
     #[cfg(target_os = "linux")]
     Devices,
+    /// Capture la souris et affiche ce qui est reçu, sans rien injecter.
+    ///
+    /// Sert à vérifier la couche capture seule : pavé tactile, plusieurs souris, molette, clics.
+    /// Pendant la durée indiquée, le curseur local ne bouge plus — c'est normal, rien n'est
+    /// réinjecté.
+    #[cfg(target_os = "linux")]
+    Monitor {
+        /// Durée de la capture, en secondes.
+        #[arg(long, default_value_t = 10)]
+        seconds: u64,
+    },
     /// Écrit une configuration de départ (géométrie détectée, jeton aléatoire).
     Init {
         /// Écrase un fichier existant.
@@ -106,6 +117,8 @@ fn main() -> Result<()> {
             height,
             delay_ms,
         } => selftest(width, height, delay_ms),
+        #[cfg(target_os = "linux")]
+        Command::Monitor { seconds } => run_async(monitor(&config_path, seconds)),
         #[cfg(target_os = "linux")]
         Command::Server => run_async(serve(&config_path)),
         Command::Client { connect } => run_async(connect_to(&config_path, connect)),
@@ -336,6 +349,104 @@ fn init(path: &PathBuf, force: bool) -> Result<()> {
         config.screens[0].height,
         config.token
     );
+    Ok(())
+}
+
+/// Affiche en direct ce que la capture reçoit, sans rien injecter.
+///
+/// C'est le maillon qu'aucun autre diagnostic ne couvre : `selftest` valide l'injection, `check`
+/// les droits, mais rien ne disait si les déplacements arrivent vraiment, ni s'ils arrivent
+/// correctement — ce qui compte surtout pour la conversion du pavé tactile, écrite à la main.
+#[cfg(target_os = "linux")]
+async fn monitor(path: &PathBuf, seconds: u64) -> Result<()> {
+    use mc_input::RawEvent;
+
+    // La configuration ne sert ici qu'aux réglages de sensibilité ; son absence n'est pas un
+    // obstacle sur une machine qu'on est en train de mettre en route.
+    let tuning = match Config::load(path) {
+        Ok(config) => config.tuning.to_tuning(),
+        Err(_) => {
+            println!("(configuration absente ou illisible : réglages par défaut)");
+            mc_input::Tuning::default()
+        }
+    };
+
+    let (width, height) = mc_node::config::detect_geometry();
+    let mut capture = mc_input::Capture::start(tuning)?;
+
+    println!(
+        "\nCapture active pendant {seconds} s.\n\
+         Bouge la souris, clique, utilise la molette, essaie le pavé tactile.\n\
+         Le curseur ne bougera pas à l'écran : rien n'est réinjecté, c'est voulu.\n\
+         Ctrl-C pour arrêter plus tôt.\n"
+    );
+
+    let started = std::time::Instant::now();
+    let limit = std::time::Duration::from_secs(seconds);
+    let mut ticker = tokio::time::interval(std::time::Duration::from_millis(100));
+    ticker.set_missed_tick_behavior(tokio::time::MissedTickBehavior::Delay);
+
+    // Position simulée, uniquement pour rendre les déplacements lisibles.
+    let (mut x, mut y) = (width / 2, height / 2);
+    let (mut acc_x, mut acc_y) = (0i32, 0i32);
+    let (mut moves, mut clicks, mut scrolls) = (0u64, 0u64, 0u64);
+
+    loop {
+        tokio::select! {
+            event = capture.recv() => {
+                match event {
+                    Some(RawEvent::Motion { dx, dy }) => {
+                        acc_x += dx;
+                        acc_y += dy;
+                        x = (x + dx).clamp(0, width - 1);
+                        y = (y + dy).clamp(0, height - 1);
+                        moves += 1;
+                    }
+                    Some(RawEvent::Button { button, pressed }) => {
+                        clicks += u64::from(pressed);
+                        println!(
+                            "  {:>8}  {button:?}",
+                            if pressed { "appui" } else { "relâché" }
+                        );
+                    }
+                    Some(RawEvent::Scroll { x: sx, y: sy }) => {
+                        scrolls += 1;
+                        println!("  {:>8}  horizontal {sx:+}, vertical {sy:+}", "molette");
+                    }
+                    None => anyhow::bail!("la capture s'est arrêtée"),
+                }
+            }
+            _ = ticker.tick() => {
+                if acc_x != 0 || acc_y != 0 {
+                    println!(
+                        "  {:>8}  {acc_x:+5},{acc_y:+5}  ->  position simulée {x},{y}",
+                        "déplace"
+                    );
+                    acc_x = 0;
+                    acc_y = 0;
+                }
+                if started.elapsed() >= limit {
+                    break;
+                }
+            }
+            _ = tokio::signal::ctrl_c() => break,
+        }
+    }
+
+    println!(
+        "\n{moves} trame(s) de déplacement, {clicks} clic(s), {scrolls} cran(s) de molette.\n"
+    );
+    if moves == 0 && clicks == 0 {
+        println!(
+            "Rien n'est arrivé. Pistes, dans l'ordre :\n\
+             \x20 - un autre programme détient-il déjà la souris (Deskflow, Synergy, Barrier) ?\n\
+             \x20 - `mcd devices` liste-t-il le bon périphérique ?\n\
+             \x20 - sur un portable sans souris branchée, seul le pavé tactile est en jeu, et sa\n\
+             \x20   conversion est la partie la plus fragile : relancer avec -v."
+        );
+    } else {
+        println!("La capture fonctionne : les déplacements arrivent au moteur.");
+    }
     Ok(())
 }
 
