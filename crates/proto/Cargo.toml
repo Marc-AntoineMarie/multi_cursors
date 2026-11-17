@@ -1,0 +1,18 @@
+[package]
+name = "mc-proto"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+description = "Messages et cadrage du protocole MultiCursos"
+
+[features]
+default = ["codec"]
+# Le codec asynchrone tire tokio ; mc-input n'en a pas besoin et peut donc le désactiver.
+codec = ["dep:tokio"]
+
+[dependencies]
+serde = { workspace = true }
+postcard = { workspace = true }
+thiserror = { workspace = true }
+tokio = { workspace = true, optional = true }
