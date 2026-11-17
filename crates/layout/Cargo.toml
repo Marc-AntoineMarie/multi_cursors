@@ -1,0 +1,10 @@
+[package]
+name = "mc-layout"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+description = "Géométrie du bureau virtuel : placement des écrans et traversée des bords"
+
+[dependencies]
+serde = { workspace = true }
