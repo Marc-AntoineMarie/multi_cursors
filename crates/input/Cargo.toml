@@ -1,0 +1,16 @@
+[package]
+name = "mc-input"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+description = "Capture et injection d'événements pointeur, par plateforme"
+
+[dependencies]
+mc-proto = { path = "../proto", default-features = false }
+anyhow = { workspace = true }
+tracing = { workspace = true }
+tokio = { workspace = true, features = ["sync"] }
+
+[target.'cfg(target_os = "linux")'.dependencies]
+libc = { workspace = true }
