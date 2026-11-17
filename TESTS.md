@@ -25,7 +25,8 @@ premier qui échoue désigne la couche fautive. Inutile de deviner.
 mcd selftest
 ```
 
-Sur Windows : `mcd.exe selftest`.
+Sur Windows : `.\mcd.exe selftest` — PowerShell refuse `mcd.exe` seul, car il ne charge pas
+les commandes du dossier courant. Sous `cmd.exe`, les deux formes marchent.
 
 **Signal attendu** : après environ une seconde, le curseur saute au centre de l'écran, parcourt un
 carré (quatre positions à mi-chemin des coins) et revient au centre. Environ 3 secondes en tout.
@@ -161,7 +162,7 @@ La ligne `en attente de` liste les machines de la disposition qui ne sont pas en
 **Sur l'autre machine** :
 
 ```bash
-mcd.exe client --config config-windows.toml --connect 192.168.1.20 -v
+.\mcd.exe client --config config-windows.toml --connect 192.168.1.20 -v
 ```
 
 **Signal attendu côté client** :

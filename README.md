@@ -125,13 +125,17 @@ Un rôle **client** n'a besoin d'aucun droit supplémentaire : il n'injecte, il 
 ### Windows
 
 Rien à installer sur la machine Windows : copier `dist/mcd.exe` (ou le construire comme ci-dessus),
-puis :
+puis, dans le dossier qui le contient :
 
+```powershell
+.\mcd.exe selftest
+.\mcd.exe init
+.\mcd.exe client --connect 192.168.1.20
 ```
-mcd.exe selftest
-mcd.exe init
-mcd.exe client --connect 192.168.1.20
-```
+
+PowerShell ne charge pas les commandes du dossier courant : il faut écrire `.\mcd.exe` et non
+`mcd.exe`. Dans `cmd.exe` les deux fonctionnent, donc les exemples de ce fichier utilisent la
+forme qui marche partout.
 
 La configuration se trouve dans `%APPDATA%\multicursos\config.toml`. Deux points à connaître :
 
