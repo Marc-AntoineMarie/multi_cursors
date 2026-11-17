@@ -175,7 +175,7 @@ INFO connectée à « portable » en tant qu'écran 1
 **Et côté serveur, au même instant** — c'est la preuve que la liaison est établie :
 
 ```
-INFO « bureau » connectée depuis Some(192.168.1.89:51324) — écran 1 (2560x1440)
+INFO « bureau » connectée depuis Some(192.168.1.21:51324) — écran 1 (2560x1440)
 DEBUG latence aller-retour : 2.31 ms
 ```
 
