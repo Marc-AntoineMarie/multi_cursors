@@ -1,0 +1,21 @@
+[package]
+name = "mcd"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+description = "Démon MultiCursos : une souris pour plusieurs ordinateurs"
+
+[[bin]]
+name = "mcd"
+path = "src/main.rs"
+
+[dependencies]
+mc-node = { path = "../../crates/node" }
+mc-input = { path = "../../crates/input" }
+mc-proto = { path = "../../crates/proto" }
+anyhow = { workspace = true }
+clap = { workspace = true }
+tokio = { workspace = true }
+tracing = { workspace = true }
+tracing-subscriber = { workspace = true }
